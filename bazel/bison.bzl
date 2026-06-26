@@ -33,8 +33,11 @@ def genyacc(
                  "--output-file=$(location " + source_out + ") " + \
                  " ".join(extra_options) + " $<"
     windows_cmd = "WIN_BISON=$$(command -v win_bison.exe || command -v win_bison || true); " + \
-                  "if [ -z \"$$WIN_BISON\" ] && [ -x '/c/Program Files/win_flex_bison-2.5.25/win_bison.exe' ]; then " + \
-                  "WIN_BISON='/c/Program Files/win_flex_bison-2.5.25/win_bison.exe'; fi; " + \
+                  "if [ -z \"$$WIN_BISON\" ]; then " + \
+                  "WIN_BISON=$$(find '/c/Program Files' '/c/Program Files (x86)' -maxdepth 2 -type f -name win_bison.exe 2>/dev/null | head -n 1); " + \
+                  "fi; " + \
+                  "if [ -z \"$$WIN_BISON\" ]; then " + \
+                  "echo 'win_bison.exe not found in PATH or standard Program Files locations' >&2; exit 127; fi; " + \
                   "\"$$WIN_BISON\" " + bison_args
     default_cmd = "BISON=; " + \
                   "for tool in $(execpaths @rules_bison//bison:current_bison_toolchain); do " + \

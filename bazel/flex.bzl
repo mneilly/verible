@@ -24,8 +24,11 @@ def genlex(name, src, out):
     # toolchain-provided executables on the configurable tools attribute, and
     # use PATH-provided flex/win_flex for the local Windows paths.
     windows_cmd = "WIN_FLEX=$$(command -v win_flex.exe || command -v win_flex || true); " + \
-                  "if [ -z \"$$WIN_FLEX\" ] && [ -x '/c/Program Files/win_flex_bison-2.5.25/win_flex.exe' ]; then " + \
-                  "WIN_FLEX='/c/Program Files/win_flex_bison-2.5.25/win_flex.exe'; fi; " + \
+                  "if [ -z \"$$WIN_FLEX\" ]; then " + \
+                  "WIN_FLEX=$$(find '/c/Program Files' '/c/Program Files (x86)' -maxdepth 2 -type f -name win_flex.exe 2>/dev/null | head -n 1); " + \
+                  "fi; " + \
+                  "if [ -z \"$$WIN_FLEX\" ]; then " + \
+                  "echo 'win_flex.exe not found in PATH or standard Program Files locations' >&2; exit 127; fi; " + \
                   "\"$$WIN_FLEX\" --outfile=$@ $<"
     default_cmd = "M4=$(execpath @rules_m4//m4:current_m4_toolchain) " + \
                   "$(execpath @rules_flex//flex:current_flex_toolchain) " + \
