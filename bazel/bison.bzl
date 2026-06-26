@@ -34,10 +34,11 @@ def genyacc(
                  " ".join(extra_options) + " $<"
     windows_cmd = "WIN_BISON=$$(command -v win_bison.exe || command -v win_bison || true); " + \
                   "if [ -z \"$$WIN_BISON\" ]; then " + \
-                  "WIN_BISON=$$(find '/c/Program Files' '/c/Program Files (x86)' -maxdepth 2 -type f -name win_bison.exe 2>/dev/null | head -n 1); " + \
+                  "WIN_BISON=$$(find '/c/Program Files' '/c/Program Files (x86)' -maxdepth 2 -type f -name win_bison.exe 2>/dev/null | head -n 1 || true); " + \
                   "fi; " + \
                   "if [ -z \"$$WIN_BISON\" ]; then " + \
                   "echo 'win_bison.exe not found in PATH or standard Program Files locations' >&2; exit 127; fi; " + \
+                  "M4=$$(cygpath -aw '$(execpath @rules_m4//m4:current_m4_toolchain)') " + \
                   "\"$$WIN_BISON\" " + bison_args
     default_cmd = "BISON=; " + \
                   "for tool in $(execpaths @rules_bison//bison:current_bison_toolchain); do " + \
@@ -57,7 +58,9 @@ def genyacc(
         }),
         tools = select({
             "//bazel:use_local_flex_bison_enabled": [],
-            "@platforms//os:windows": [],
+            "@platforms//os:windows": [
+                "@rules_m4//m4:current_m4_toolchain",
+            ],
             "//conditions:default": [
                 "@rules_bison//bison:current_bison_toolchain",
                 "@rules_m4//m4:current_m4_toolchain",
