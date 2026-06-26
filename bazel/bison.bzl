@@ -32,6 +32,10 @@ def genyacc(
     bison_args = "--defines=$(location " + header_out + ") " + \
                  "--output-file=$(location " + source_out + ") " + \
                  " ".join(extra_options) + " $<"
+    windows_cmd = "WIN_BISON=$$(command -v win_bison.exe || command -v win_bison || true); " + \
+                  "if [ -z \"$$WIN_BISON\" ] && [ -x '/c/Program Files/win_flex_bison-2.5.25/win_bison.exe' ]; then " + \
+                  "WIN_BISON='/c/Program Files/win_flex_bison-2.5.25/win_bison.exe'; fi; " + \
+                  "\"$$WIN_BISON\" " + bison_args
     default_cmd = "BISON=; " + \
                   "for tool in $(execpaths @rules_bison//bison:current_bison_toolchain); do " + \
                   "case $$tool in */bin/bison|*/bin/bison.exe) BISON=$$tool ;; esac; " + \
@@ -45,7 +49,7 @@ def genyacc(
         outs = [header_out, source_out] + extra_outs,
         cmd = select({
             "//bazel:use_local_flex_bison_enabled": "bison " + bison_args,
-            "@platforms//os:windows": "win_bison.exe " + bison_args,
+            "@platforms//os:windows": windows_cmd,
             "//conditions:default": default_cmd,
         }),
         tools = select({

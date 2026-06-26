@@ -23,6 +23,10 @@ def genlex(name, src, out):
     # Bazel 8 no longer allows select() in genrule.toolchains. Keep the
     # toolchain-provided executables on the configurable tools attribute, and
     # use PATH-provided flex/win_flex for the local Windows paths.
+    windows_cmd = "WIN_FLEX=$$(command -v win_flex.exe || command -v win_flex || true); " + \
+                  "if [ -z \"$$WIN_FLEX\" ] && [ -x '/c/Program Files/win_flex_bison-2.5.25/win_flex.exe' ]; then " + \
+                  "WIN_FLEX='/c/Program Files/win_flex_bison-2.5.25/win_flex.exe'; fi; " + \
+                  "\"$$WIN_FLEX\" --outfile=$@ $<"
     default_cmd = "M4=$(execpath @rules_m4//m4:current_m4_toolchain) " + \
                   "$(execpath @rules_flex//flex:current_flex_toolchain) " + \
                   "--outfile=$@ $<"
@@ -33,7 +37,7 @@ def genlex(name, src, out):
         outs = [out],
         cmd = select({
             "//bazel:use_local_flex_bison_enabled": "flex --outfile=$@ $<",
-            "@platforms//os:windows": "win_flex.exe --outfile=$@ $<",
+            "@platforms//os:windows": windows_cmd,
             "//conditions:default": default_cmd,
         }),
         tools = select({

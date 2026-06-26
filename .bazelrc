@@ -24,6 +24,7 @@ common:macos --features=-supports_dynamic_linker --linkopt=-framework --linkopt=
 # keep this configuration focused on the documented Bazel 8 clang-cl path.
 common:windows --extra_toolchains=@local_config_cc//:cc-toolchain-x64_windows-clang-cl --extra_execution_platforms=//:x64_windows-clang-cl
 common:windows --compiler=clang-cl --cxxopt=/std:c++17 --host_cxxopt=/std:c++17
+common:windows --action_env=PATH
 
 build --cxxopt="-Wno-unknown-warning-option" --host_cxxopt="-Wno-unknown-warning-option"
 # TODO: this looks like benign where it happens but to be explored further.
